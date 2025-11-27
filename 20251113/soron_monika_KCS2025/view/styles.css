@@ -1,10 +1,45 @@
-body{
-  margin: 0px auto;
-  width: 1200px;
-  background-color: #73AF6F;
-  color:  007E6E;
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(120deg, #e6793a, #e65d01);
+    background-size: 400% 400%;
+    animation: gradientMove 12s ease infinite;
 }
 
-label{
-  font-weight: bold;
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    background: rgba(54, 21, 1, 0.178);
+    backdrop-filter: blur(8px);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 0 35px rgba(231, 102, 16, 0.3);
+}
+
+table{
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.title-anim {
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: titleAppear 1.5s ease forwards;
+}
+
+@keyframes titleAppear {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.table-hover tbody tr:hover {
+    transform: scale(1.01);
+    background-color: rgba(255,255,255,0.15) ;
+    transition: 0.25s ease;
+}
+
+tr {
+    transition: background-color 0.4s ease;
 }

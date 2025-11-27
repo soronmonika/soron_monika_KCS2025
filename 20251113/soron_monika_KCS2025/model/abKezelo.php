@@ -1,107 +1,138 @@
 <?php
 
-include_once("contactPerson.php");
+class AbKezelo {
+    public static function getContactPersons(): array {
+        $con = new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
+        $stmt = $con->prepare("SELECT CID, Name, Phone, Email FROM ContactPerson;");
+        $stmt->execute();
+        $stmt->bind_result($cid, $name, $phone, $email);
 
-class AbKezelo{
-    public static function getContactPersons():array{
-      $con=new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
-      $stmt=$con->prepare("SELECT * FROM ContactPerson;");
-      $stmt->execute();
-      $stmt->bind_result($cid, $name, $phone, $email);
+        $contactPersons = [];
 
-      $contactPersons=[];
+        while ($stmt->fetch()) {
+            $contactPersons[] = new ContactPerson($cid, $name, $phone, $email);
+        }
 
-      while($stmt->fetch()){
-          $contactPerson=new ContactPerson($cid, $name, $phone, $email);
-          $contactPersons=$contactPerson;
-      }
+        $stmt->close();
+        $con->close();
 
-      $stmt->close();
-      $con->close();
-
-      return $contactPersons;
+        return $contactPersons;
     }
 
 
-        public static function getProducts():array{
-      $con=new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
-      $stmt=$con->prepare("SELECT * FROM product;");
-      $stmt->execute();
-      $stmt->bind_result($seid, $manufacturer, $model, $dataReceived);
+    public static function getProducts(): array {
+        $con = new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
+        $stmt = $con->prepare("SELECT SEID, Manufacturer, Model, DataReceived FROM Product;");
+        $stmt->execute();
+        $stmt->bind_result($seid, $manufacturer, $model, $dataReceived);
 
-      $products=[];
+        $products = [];
 
-      while($stmt->fetch()){
-          $product=new Products($seid, $manufacturer, $model, $dataReceived);
-          $products=$product;
-      }
+        while ($stmt->fetch()) {
+            $products[] = new Product($seid, $manufacturer, $model, $dataReceived);
+        }
 
-      $stmt->close();
-      $con->close();
+        $stmt->close();
+        $con->close();
 
-      return $products;
+        return $products;
     }
 
 
-    public static function getService() : array{
-      $con=new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
-      $stmt=$con->prepare("SELECT * FROM service;");
-      $stmt->execute();
-      $stmt->bind_result($sid, $seid, $cid, $status, $lasUpdate);
+    public static function getService(): array {
+        $con = new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
+        $stmt = $con->prepare("SELECT SID, SEID, CID, Status, LastUpdate FROM Service;");
+        $stmt->execute();
+        $stmt->bind_result($sid, $seid, $cid, $status, $lastUpdate);
 
-      $Service=[];
+        $serviceList = [];
 
-      while ($stmt->fetch()){
-        $service=new Service($sid, $seid, $cid, $status, $lasUpdate);
-        $Service=$service;
-      }
+        while ($stmt->fetch()) {
+            $serviceList[] = new Service($sid, $seid, $cid, $status, $lastUpdate);
+        }
 
-      $stmt->close();
-      $con->close();
+        $stmt->close();
+        $con->close();
 
-      return $Service;
+        return $serviceList;
     }
-}
 
-//felvitel
-public static function createProduct(Product $product):void{
-    $con=new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
-    $stmt=$con->prepare("INSERT INTO Product VALUES (?,?,?,?);");
 
-    $seid=$Product->getSeid();
-    $manufacturer=$Product->getManufacturer();
-    $model=$Product->getModel();
-    $dataReceived=$product->getDataReceived();
+    public static function createContactPerson(ContactPerson $contactPerson): void {
+        $con = new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
+        $stmt = $con->prepare("INSERT INTO ContactPerson (CID, Name, Phone, Email) VALUES (?, ?, ?, ?);");
 
-    $stmt->bind_param("ssss", $seid, $manufacturer, $model, $dataReceived);
-    $stmt->execute();
+        $cid = $contactPerson->getCid();
+        $name = $contactPerson->getName();
+        $phone = $contactPerson->getPhone();
+        $email = $contactPerson->getEmail();
+
+        $stmt->bind_param("ssss", $cid, $name, $phone, $email);
+        $stmt->execute();
+
+        $stmt->close();
+        $con->close();
+    }
+
+
+    public static function createProduct(Product $product): void {
+        $con = new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
+        $stmt = $con->prepare("INSERT INTO Product (SEID, Manufacturer, Model, DataReceived) VALUES (?, ?, ?, ?);");
+
+        $seid = $product->getSeid();
+        $manufacturer = $product->getManufacturer();
+        $model = $product->getModel();
+        $dataReceived = $product->getDataReceived();
+
+        $stmt->bind_param("ssss", $seid, $manufacturer, $model, $dataReceived);
+        $stmt->execute();
+
+        $stmt->close();
+        $con->close();
+    }
+
+
+    public static function createService(Service $service): void {
+        $con = new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
+
+        $stmt = $con->prepare("INSERT INTO Service (SID, SEID, CID, Status) VALUES (?, ?, ?, ?);");
+
+        $sid = $service->getSid();
+        $seid = $service->getSeid();
+        $cid = $service->getCid();
+        $status = $service->getStatus();
+
+        $stmt->bind_param("ssss", $sid, $seid, $cid, $status);
+        $stmt->execute();
+
+        $stmt->close();
+        $con->close();
+    }
+
+
+   public static function getAllServiceItems(): array {
+    $con = new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
+
+    $sql = " SELECT Product.SEID, Product.Manufacturer, Product.Model, ContactPerson.Name, ContactPerson.Phone, ContactPerson.Email, Service.Status, Service.lastupdate
+        FROM Service
+        INNER JOIN Product ON Service.SEID = Product.SEID
+        INNER JOIN ContactPerson ON Service.CID = ContactPerson.CID
+        WHERE NOT (
+            Service.Status = 'Kész'
+            AND DATE(Service.lastupdate) != CURDATE()
+        )
+        ORDER BY FIELD( Service.Status, 'Beérkezett', 'Hibafeltárás', 'Alkatrész beszerzés alatt','Javítás','Kész');
+    ";
+
+    $result = $con->query($sql);
+
+    $adatok = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $adatok[] = $row;
+    }
 
     $con->close();
+    return $adatok;
 }
-
-public static function createContactPerson(ContactPerson $contactPerson):void{
-  $con=new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
-  $stmt=$con->prepare("INSERT INTO ContactPerson VALUES (?,?,?,?);");
-
-  $cid=$ContactPerson->getCid();
-  $name=$ContactPerson->getName();
-  $phone=$ContactPerson->getPhone();
-  $email=$ContactPerson->getEmail();
-
-  $stmt->bind_param("ssis", $cid, $name, $phone, $email);
-  $stmt->execute();
-
-  $con->close();
-}
-
-public static function createService(Service $service):void{
-  $con=new mysqli("127.0.0.1", "root", "", "soron_monika_KCS2025");
-  $stmt=$con->prepare("INSER INTO  Service VALUS (?);");
-
-  $status=$Service->getStatus();
-
-  $stmt->bind_param("s", $status);
-  $stmt->execute();
-
-  $con->close();
 }
